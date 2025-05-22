@@ -10,25 +10,25 @@ type Database interface {
 	GetData() string
 }
 
+// mongodb struct implements Database interface
 type MongoDB struct {
 	currentData string
 }
 
-type SQL struct {
-	currentData string
-}
-
-// mongodb struct implements Database interface
 func (mongoDB *MongoDB) GetData() string {
-	return mongoDB.currentData
+	return mongoDB.currentData + " (from mongodb)"
 }
 func (mongoDB *MongoDB) PutData(data string) {
 	mongoDB.currentData = data
 }
 
 // sql struct implements Database interface
+type SQL struct {
+	currentData string
+}
+
 func (sql *SQL) GetData() string {
-	return sql.currentData
+	return sql.currentData + " (from sql)"
 }
 func (sql *SQL) PutData(data string) {
 	sql.currentData = data
