@@ -2,31 +2,70 @@ package main
 
 import "errors"
 
-type Service interface {
-	ValidateAndSet(string) error
-	GetData() string
+type Handler interface {
+	SetNext(handler Handler) Handler
+	Handle(data string) error
 }
 
-type service struct {
+// this does not implement the Handler interface, but is used for composition for other instances of Handler
+type handler struct {
+	next Handler
+}
+
+func (h *handler) SetNext(handler Handler) Handler {
+	h.next = handler
+	return handler
+}
+func (h *handler) NextHandle(data string) error {
+	if h.next != nil {
+		return h.next.Handle(data)
+	}
+	return nil
+}
+
+// To check if empty data
+type emptyHandler struct {
+	handler
+}
+
+func (e *emptyHandler) Handle(data string) error {
+	if data == "" {
+		return errors.New("Empty")
+	}
+	return e.NextHandle(data)
+}
+
+func NewEmptyHandler() Handler {
+	return &emptyHandler{}
+}
+
+// To validate length of the data
+type LengthHandler struct {
+	handler
+}
+
+func (e *LengthHandler) Handle(data string) error {
+	if len(data) < 5 {
+		return errors.New("Short")
+	}
+	return e.NextHandle(data)
+}
+
+func NewLengthHandler() Handler {
+	return &LengthHandler{}
+}
+
+// To save the data in the repo after validation
+type RepoHandler struct {
+	handler
 	repo Repository
 }
 
-// handle the responsibility
-func (s *service) ValidateAndSet(data string) error {
-	if data != "" {
-		s.repo.PutData(data)
-		return nil
-	}
-
-	return errors.New("Empty data")
+func (e *RepoHandler) Handle(data string) error {
+	e.repo.PutData(data)
+	return nil
 }
 
-// repo is responsible to send the required data to client
-func (s *service) GetData() string {
-	return s.repo.GetData()
-}
-
-// creating a chain of responsibility
-func NewService(repository Repository) Service {
-	return &service{repo: repository}
+func NewRepositoryHandler(repo Repository) Handler {
+	return &RepoHandler{repo: repo}
 }

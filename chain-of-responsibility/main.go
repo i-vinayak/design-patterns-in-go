@@ -5,9 +5,20 @@ import "fmt"
 func main() {
 	repository := NewRepository()
 
-	// injecting the repo layer into service
-	s := NewService(repository)
+	emptyHandler := NewEmptyHandler()
+	lengthHandler := NewLengthHandler()
+	repositoryHandler := NewRepositoryHandler(repository)
 
-	s.ValidateAndSet("random Data")
-	fmt.Println(s.GetData())
+	// chaining the handlers
+	emptyHandler.SetNext(lengthHandler).SetNext(repositoryHandler)
+
+	// setting data
+	err := emptyHandler.Handle("Hello")
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Succesffuly set data")
+	}
+
+	fmt.Println(repository.GetData())
 }
