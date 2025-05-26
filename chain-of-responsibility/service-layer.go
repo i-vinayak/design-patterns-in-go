@@ -8,15 +8,15 @@ type Handler interface {
 }
 
 // this does not implement the Handler interface, but is used for composition for other instances of Handler
-type handler struct {
+type handlerBase struct {
 	next Handler
 }
 
-func (h *handler) SetNext(handler Handler) Handler {
+func (h *handlerBase) SetNext(handler Handler) Handler {
 	h.next = handler
 	return handler
 }
-func (h *handler) NextHandle(data string) error {
+func (h *handlerBase) NextHandle(data string) error {
 	if h.next != nil {
 		return h.next.Handle(data)
 	}
@@ -25,7 +25,7 @@ func (h *handler) NextHandle(data string) error {
 
 // To check if empty data
 type emptyHandler struct {
-	handler
+	handlerBase
 }
 
 func (e *emptyHandler) Handle(data string) error {
@@ -41,7 +41,7 @@ func NewEmptyHandler() Handler {
 
 // To validate length of the data
 type LengthHandler struct {
-	handler
+	handlerBase
 }
 
 func (e *LengthHandler) Handle(data string) error {
@@ -57,7 +57,7 @@ func NewLengthHandler() Handler {
 
 // To save the data in the repo after validation
 type RepoHandler struct {
-	handler
+	handlerBase
 	repo Repository
 }
 
