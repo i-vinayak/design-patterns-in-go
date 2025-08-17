@@ -14,4 +14,11 @@ func main() {
 	folder1.Print()
 	fmt.Println()
 	folder1Clone.Print()
+
+	fmt.Println()
+	folder2 := NewFolder("main_folder", folder1, folder1Clone)
+	folder2.Print()
+
+	fmt.Println()
+	folder2.Clone().Print()
 }
